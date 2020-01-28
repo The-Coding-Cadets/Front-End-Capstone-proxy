@@ -70,6 +70,25 @@ app.get('/', (req, res) => {
   res.send(req.body)
 });
 
+app.get("/products", async (request, response) => {
+    try {
+        var result = await ProductInfo.find().exec();
+        response.send(result);
+    } catch (error) {
+        response.status(500).send(error);
+    }
+});
+
+app.put("/product/:id", async (request, response) => {
+    try {
+        var product = await ProductInfo.findById(request.params.id).exec();
+        product.set(request.body);
+        var result = await product.save();
+        response.send(result);
+    } catch (error) {
+        response.status(500).send(error);
+    }
+});
 
 app.listen(PORT, () => {
   console.log(`listening on port ${PORT}`);
