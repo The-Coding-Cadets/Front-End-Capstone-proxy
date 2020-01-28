@@ -1,15 +1,76 @@
+onst express = require('express');
+const bodyParser = require('body-parser');
 
-//const mysqlConfig = require('./config.js');....need to require mongodb config
-//const data = require('../react-client/src/sample_data.js')
+const Mongoose = require("mongoose");
 
 
+Mongoose.connect("mongodb://localhost/ProductInfo")
 
-//const connection = mysql.createConnection(mysqlConfig);
+const app = express();
+const PORT = 3000;
 
-//const getAllPhrases = function(databasedata) { 
-//var returnArray = [];
-//databasedata.map((item) => returnArray.push(item.kor))
-//return returnArray
-//};
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
 
-//module.exports = getAllPhrases
+var Schema = new Mongoose.Schema;
+
+
+const ProductInfo = Mongoose.model('product', {
+   id: Number,
+   details: {
+      highlights: [ String ],
+      description: String,
+      specifications: {
+         otherCharacteristics: Object,
+         TCIN: Number,
+         UPC: Number,
+         itemNumber: Number
+      },
+      qA: {
+         questions: [
+            {
+               text: String,
+               postDate: Date,
+               user: String,
+               answers: [
+                  {
+                     answer: String,
+                     helpful: Number,
+                     notHelpful: Number,
+                  }
+               ],
+            }
+         ],
+      },
+      shippingAndReturns: {
+         shippingOptions: {
+            getByDate: Date,
+            description: String
+         },
+         shippingDetails: String,
+         returnDetails: String
+      },
+   }
+  });
+
+ app.use(express.static(__dirname + '/../react-client/dist'));
+
+app.post('/product', async (request, response) => {
+  try {
+  var product = new ProductInfo(request.body);
+  var result = await product.save();
+  response.send(result);
+  } catch (error) {
+    response.status(500).send(error)
+  }
+})
+
+
+app.get('/', (req, res) => {
+  res.send(req.body)
+});
+
+
+app.listen(PORT, () => {
+  console.log(`listening on port ${PORT}`);
+});
